@@ -308,7 +308,7 @@
     // Uruchomienie WebSocket i obsługa komunikacji
     function startWebSocket() {
       // <-- Tu podaj swój adres WebSocket, np: -->
-      const wsUrl = 'wss://komunikator-web.onrender.com/ws';
+      const ws = new WebSocket('wss://komunikator-web.onrender.com'); // użyj WSS (secure WS)
       ws = new WebSocket(wsUrl);
 
       ws.addEventListener('open', () => {
