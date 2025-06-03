@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bezpieczny Komunikator - Styl Discord</title>
+  <style>
+    /* Reset margin and paddings */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #36393f;
+      color: #dcddde;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Container to center the login forms and chat */
+    #login, #loginUser {
+      margin: auto;
+      background-color: #2f3136;
+      border-radius: 8px;
+      padding: 40px 30px;
+      width: 360px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h3 {
+      color: #fff;
+      margin-bottom: 24px;
+      font-weight: 700;
+      font-size: 1.6rem;
+      user-select: none;
+    }
+
+    input {
+      width: 100%;
+      background-color: #202225;
+      border: none;
+      border-radius: 4px;
+      padding: 12px 15px;
+      margin-bottom: 16px;
+      color: #dcddde;
+      font-size: 1rem;
+      transition: background-color 0.15s ease;
+    }
+    input::placeholder {
+      color: #72767d;
+    }
+    input:focus {
+      outline: none;
+      background-color: #2c2f33;
+    }
+
+    button {
+      width: 100%;
+      background-color: #5865f2;
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+      padding: 12px 0;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s ease;
+    }
+    button:hover {
+      background-color: #4752c4;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    #accessError, #loginError {
+      width: 100%;
+      text-align: center;
+      color: #f04747;
+      margin-top: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      min-height: 1.1em;
+      user-select: none;
+    }
+
+    /* CHAT */
+    #chat {
+      display: none;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      background-color: #36393f;
+    }
+
+    #messages {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 20px;
+      scroll-behavior: smooth;
+      /* Discord style custom scrollbar */
+      scrollbar-width: thin;
+      scrollbar-color: #202225 transparent;
+    }
+    #messages::-webkit-scrollbar {
+      width: 8px;
+      background-color: transparent;
+    }
+    #messages::-webkit-scrollbar-thumb {
+      background-color: #202225;
+      border-radius: 4px;
+    }
+
+    .message {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 16px;
+      max-width: 75%;
+      line-height: 1.3;
+    }
+
+    .username {
+      font-weight: 600;
+      color: #4f90e2;
+      margin-bottom: 2px;
+      user-select: text;
+    }
+
+    .time {
+      font-size: 0.75rem;
+      color: #72767d;
+      margin-left: 8px;
+      user-select: none;
+    }
+
+    .message-text {
+      background-color: #2f3136;
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: #dcddde;
+      word-wrap: break-word;
+      user-select: text;
+      white-space: pre-line;
+    }
+
+    /* Message header: username and time horizontally aligned */
+    .message-header {
+      display: flex;
+      align-items: center;
+    }
+
+    /* Input area */
+    #inputContainer {
+      display: flex;
+      padding: 16px 20px;
+      background-color: #40444b;
+      border-top: 1px solid #2f3136;
+    }
+
+    #messageInput {
+      flex-grow: 1;
+      background-color: #292b2f;
+      border: none;
+      border-radius: 4px 0 0 4px;
+      padding: 12px 15px;
+      color: #dcddde;
+      font-size: 1rem;
+      user-select: text;
+      transition: background-color 0.15s ease;
+    }
+    #messageInput::placeholder {
+      color: #72767d;
+    }
+    #messageInput:focus {
+      outline: none;
+      background-color: #3a3c42;
+    }
+
+    #sendBtn {
+      background-color: #5865f2;
+      border: none;
+      border-radius: 0 4px 4px 0;
+      padding: 0 20px;
+      cursor: pointer;
+      font-weight: 700;
+      color: white;
+      transition: background-color 0.2s ease;
+      user-select: none;
+      font-size: 1rem;
+    }
+    #sendBtn:hover:enabled {
+      background-color: #4752c4;
+    }
+    #sendBtn:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <!-- Ekran logowania do kodu dostępu -->
+  <div id="login">
+    <h3>Podaj kod dostępu</h3>
+    <input id="accessCodeInput" type="password" placeholder="Kod dostępu" autocomplete="off" />
+    <button id="accessBtn">Dalej</button>
+    <div id="accessError"></div>
+  </div>
+
+  <!-- Ekran logowania użytkownika -->
+  <div id="loginUser" style="display:none;">
+    <h3>Logowanie</h3>
+    <input id="usernameInput" type="text" placeholder="Nazwa użytkownika" autocomplete="username" />
+    <input id="passwordInput" type="password" placeholder="Hasło" autocomplete="current-password" />
+    <button id="loginBtn">Zaloguj</button>
+    <div id="loginError"></div>
+  </div>
+
+  <!-- Główny czat -->
+  <div id="chat">
+    <div id="messages" role="log" aria-live="polite" aria-relevant="additions"></div>
+    <div id="inputContainer">
+      <input id="messageInput" type="text" placeholder="Napisz wiadomość..." autocomplete="off" aria-label="Pole wpisywania wiadomości" />
+      <button id="sendBtn" disabled>Wyślij</button>
+    </div>
+  </div>
+
+  <script>
+    const ws = new WebSocket('ws://192.168.0.8:3000');
+
+    const accessError = document.getElementById('accessError');
+    const loginError = document.getElementById('loginError');
+    const accessCodeInput = document.getElementById('accessCodeInput');
+    const accessBtn = document.getElementById('accessBtn');
+    const loginUserDiv = document.getElementById('loginUser');
+    const loginBtn = document.getElementById('loginBtn');
+    const usernameInput = document.getElementById('usernameInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const loginDiv = document.getElementById('login');
+    const chatDiv = document.getElementById('chat');
+    const messagesDiv = document.getElementById('messages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    ws.onopen = () => {
+      console.log('Połączono z serwerem WebSocket');
+    };
+
+    ws.onclose = () => {
+      alert('Połączenie z serwerem zostało zamknięte.');
+    };
+
+    ws.onerror = (e) => {
+      console.error('Błąd WebSocket:', e);
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      switch (data.type) {
+        case 'access_code':
+          if (data.status === 'ok') {
+            loginDiv.style.display = 'none';
+            loginUserDiv.style.display = 'flex';
+            accessError.textContent = '';
+            accessCodeInput.value = '';
+          } else {
+            accessError.textContent = 'Niepoprawny kod dostępu!';
+          }
+          break;
+
+        case 'login':
+          if (data.status === 'ok') {
+            loginUserDiv.style.display = 'none';
+            chatDiv.style.display = 'flex';
+            loginError.textContent = '';
+            usernameInput.value = '';
+            passwordInput.value = '';
+            messageInput.focus();
+            sendBtn.disabled = false;
+          } else {
+            loginError.textContent = 'Niepoprawna nazwa użytkownika lub hasło!';
+          }
+          break;
+
+        case 'message':
+          addMessage(data.username, data.text, data.time);
+          break;
+
+        case 'users':
+          // Opcjonalne aktualizacje listy użytkowników
+          break;
+      }
+    };
+
+    function addMessage(username, text, time) {
+      const messageWrapper = document.createElement('div');
+      messageWrapper.className = 'message';
+
+      const header = document.createElement('div');
+      header.className = 'message-header';
+
+      const userSpan = document.createElement('span');
+      userSpan.className = 'username';
+      userSpan.textContent = username;
+
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'time';
+      timeSpan.textContent = time;
+
+      header.appendChild(userSpan);
+      header.appendChild(timeSpan);
+
+      const msgText = document.createElement('div');
+      msgText.className = 'message-text';
+      msgText.textContent = text;
+
+      messageWrapper.appendChild(header);
+      messageWrapper.appendChild(msgText);
+
+      messagesDiv.appendChild(messageWrapper);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    accessBtn.addEventListener('click', () => {
+      const code = accessCodeInput.value.trim();
+      if (!code) {
+        accessError.textContent = 'Podaj kod dostępu!';
+        return;
+      }
+      ws.send(JSON.stringify({ type: 'access_code', code }));
+    });
+
+    loginBtn.addEventListener('click', () => {
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+      if (!username || !password) {
+        loginError.textContent = 'Podaj nazwę użytkownika i hasło!';
+        return;
+      }
+      ws.send(JSON.stringify({ type: 'login', username, password }));
+    });
+
+    sendBtn.addEventListener('click', () => {
+      const text = messageInput.value.trim();
+      if (text) {
+        ws.send(JSON.stringify({ type: 'message', text }));
+        messageInput.value = '';
+      }
+    });
+
+    // Enter w polu wiadomości wyśle wiadomość
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (!sendBtn.disabled) {
+          sendBtn.click();
+        }
+      }
+    });
+
+  </script>
+</body>
+</html>
+
