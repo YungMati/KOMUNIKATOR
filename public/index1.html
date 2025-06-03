@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Komunikator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      width: 380px;
+      max-width: 95vw;
+      background: rgba(0,0,0,0.5);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    header {
+      padding: 16px;
+      background: rgba(255,255,255,0.15);
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      user-select: none;
+    }
+    #login-form, #chat-container {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    #login-form input, #login-form button {
+      padding: 10px 12px;
+      margin: 6px 0;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+    }
+    #login-form input {
+      background: rgba(255,255,255,0.15);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    #login-form input::placeholder {
+      color: #eee;
+    }
+    #login-form button {
+      background: #9b59b6;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+    #login-form button:hover:not(:disabled) {
+      background: #8e44ad;
+    }
+    #login-form button:disabled {
+      background: #6c3483;
+      cursor: default;
+    }
+    #error-msg {
+      color: #f44336;
+      font-size: 0.9rem;
+      height: 20px;
+      margin-bottom: 8px;
+      user-select: none;
+    }
+
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      scrollbar-width: thin;
+      scrollbar-color: #9b59b6 transparent;
+    }
+    #messages::-webkit-scrollbar {
+      width: 8px;
+    }
+    #messages::-webkit-scrollbar-thumb {
+      background-color: #9b59b6;
+      border-radius: 4px;
+    }
+    .message {
+      margin-bottom: 12px;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      word-break: break-word;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      animation: fadeIn 0.3s ease forwards;
+    }
+    .message.self {
+      background: #9b59b6;
+      color: white;
+      align-self: flex-end;
+      box-shadow: 0 2px 8px rgba(155, 89, 182, 0.7);
+    }
+    .message .meta {
+      font-size: 0.75rem;
+      opacity: 0.6;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+    }
+    form#chat-form {
+      display: flex;
+      border-top: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.4);
+      border-radius: 0 0 12px 12px;
+    }
+    form#chat-form input[type="text"] {
+      flex: 1;
+      border: none;
+      padding: 14px 16px;
+      font-size: 1rem;
+      color: white;
+      background: transparent;
+      outline: none;
+      user-select: text;
+    }
+    form#chat-form button {
+      background: #9b59b6;
+      border: none;
+      color: white;
+      padding: 0 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    form#chat-form button:hover:enabled {
+      background: #8e44ad;
+    }
+    form#chat-form button:disabled {
+      background: #6c3483;
+      cursor: default;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main" aria-label="Komunikator czat">
+    <header>Twój Komunikator</header>
+
+    <!-- Formularz logowania -->
+    <form id="login-form" aria-label="Formularz logowania">
+      <div id="error-msg" role="alert" aria-live="assertive"></div>
+      <input type="text" id="access-code" placeholder="Kod dostępu" autocomplete="off" required />
+      <input type="text" id="username" placeholder="Nazwa użytkownika" autocomplete="off" required />
+      <input type="password" id="password" placeholder="Hasło" autocomplete="off" required />
+      <button type="submit">Zaloguj się</button>
+    </form>
+
+    <!-- Czat, ukryty do czasu zalogowania -->
+    <div id="chat-container" style="display:none; flex-direction: column; height: 480px;">
+      <div id="messages" aria-live="polite" aria-relevant="additions"></div>
+      <form id="chat-form" aria-label="Formularz wysyłania wiadomości">
+        <input id="message-input" type="text" placeholder="Napisz wiadomość..." autocomplete="off" aria-required="true" />
+        <button id="send-btn" type="submit" disabled>Wyślij</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // --- Stałe użytkowników i kodu dostępu ---
+    const ACCESS_CODE = "ZAQ!2wsx";
+    const USERS = {
+      'yung': '1234',
+      'czarny': '1234'
+    };
+
+    // Elementy DOM
+    const loginForm = document.getElementById('login-form');
+    const errorMsg = document.getElementById('error-msg');
+    const accessCodeInput = document.getElementById('access-code');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+
+    const chatContainer = document.getElementById('chat-container');
+    const messagesEl = document.getElementById('messages');
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    let ws = null;
+    let loggedUser = null;
+
+    // Włącz/wyłącz przycisk wyślij w czacie
+    messageInput.addEventListener('input', () => {
+      sendBtn.disabled = messageInput.value.trim().length === 0;
+    });
+
+    // Logowanie
+    loginForm.addEventListener('submit', e => {
+      e.preventDefault();
+      errorMsg.textContent = '';
+
+      const accessCode = accessCodeInput.value.trim();
+      const username = usernameInput.value.trim().toLowerCase();
+      const password = passwordInput.value;
+
+      if (accessCode !== ACCESS_CODE) {
+        errorMsg.textContent = "Nieprawidłowy kod dostępu!";
+        return;
+      }
+      if (!USERS.hasOwnProperty(username)) {
+        errorMsg.textContent = "Nieznany użytkownik!";
+        return;
+      }
+      if (USERS[username] !== password) {
+        errorMsg.textContent = "Nieprawidłowe hasło!";
+        return;
+      }
+
+      // Logowanie OK
+      loggedUser = username;
+      loginForm.style.display = 'none';
+      chatContainer.style.display = 'flex';
+
+      // Uruchom WebSocket i podłącz eventy
+      startWebSocket();
+
+      addMessage(`Witaj, ${loggedUser}!`, 'System');
+    });
+
+    // Funkcja dodająca wiadomość do DOM
+    function addMessage(text, user = 'Anonim', self = false) {
+      const msgEl = document.createElement('div');
+      msgEl.classList.add('message');
+      if(self) msgEl.classList.add('self');
+
+      const now = new Date();
+      const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      msgEl.innerHTML = `
+        <div class="meta">
+          <span class="username">${escapeHtml(user)}</span>
+          <span class="time">${time}</span>
+        </div>
+        <div class="text">${escapeHtml(text)}</div>
+      `;
+      messagesEl.appendChild(msgEl);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    // Escape HTML - zabezpieczenie przed XSS
+    function escapeHtml(unsafe) {
+      return unsafe.replace(/[&<"'>]/g, function(m) {
+        switch (m) {
+          case '&': return "&amp;";
+          case '<': return "&lt;";
+          case '>': return "&gt;";
+          case '"': return "&quot;";
+          case "'": return "&#039;";
+          default: return m;
+        }
+      });
+    }
+
+    // Obsługa formularza wysyłania wiadomości
+    chatForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const text = messageInput.value.trim();
+      if(text.length === 0) return;
+
+      // Wyślij do WebSocket
+      if(ws && ws.readyState === WebSocket.OPEN) {
+        const msgObj = {
+          type: "message",
+          user: loggedUser,
+          text: text
+        };
+        ws.send(JSON.stringify(msgObj));
+        messageInput.value = '';
+        sendBtn.disabled = true;
+
+        // Pokaż lokalnie od razu
+        addMessage(text, loggedUser, true);
+      } else {
+        addMessage('Brak połączenia z serwerem.', 'System');
+      }
+    });
+
+    // Uruchomienie WebSocket i obsługa komunikacji
+    function startWebSocket() {
+      // <-- Tu podaj swój adres WebSocket, np: -->
+      const wsUrl = 'wss://komunikator-web.onrender.com/ws';
+      ws = new WebSocket(wsUrl);
+
+      ws.addEventListener('open', () => {
+        addMessage('Połączono z serwerem.', 'System');
+      });
+
+      ws.addEventListener('message', e => {
+        try {
+          const data = JSON.parse(e.data);
+          if(data.type === 'message' && data.user !== loggedUser) {
+            addMessage(data.text, data.user, false);
+          }
+        } catch(err) {
+          console.warn('Błąd parsowania wiadomości:', err);
+        }
+      });
+
+      ws.addEventListener('close', () => {
+        addMessage('Połączenie z serwerem zostało zamknięte.', 'System');
+      });
+
+      ws.addEventListener('error', () => {
+        addMessage('Błąd połączenia z serwerem.', 'System');
+      });
+    }
+  </script>
+</body>
+</html>
