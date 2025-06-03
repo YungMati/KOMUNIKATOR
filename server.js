@@ -1,78 +1,57 @@
+const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
-const fs = require('fs');
 const path = require('path');
 
-const accessCode = 'ZAQ!2wsx';
-const users = {
+const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+const PORT = process.env.PORT || 3000;
+
+const ACCESS_CODE = 'ZAQ!2wsx';
+const USERS = {
   'yung': '1234',
   'czarny': '1234'
 };
 
-const server = http.createServer((req, res) => {
-  let filePath = path.join(__dirname, 'public', req.url === '/' ? 'index.html' : req.url);
-  let ext = path.extname(filePath);
-  let contentType = {
-    '.js': 'text/javascript',
-    '.css': 'text/css',
-    '.html': 'text/html'
-  }[ext] || 'text/html';
+let savedMessages = [];
 
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
-      res.writeHead(404);
-      res.end('Not Found');
-      return;
-    }
-    res.writeHead(200, { 'Content-Type': contentType });
-    res.end(content);
-  });
-});
+app.use(express.static(path.join(__dirname, 'public')));
 
-const wss = new WebSocket.Server({ server });
-let clients = [];
+wss.on('connection', ws => {
+  let loggedUser = null;
 
-wss.on('connection', (ws) => {
-  clients.push(ws);
-
-  ws.on('message', (message) => {
-    let data;
+  ws.on('message', msg => {
     try {
-      data = JSON.parse(message);
-    } catch {
-      return;
+      const data = JSON.parse(msg);
+
+      if (data.type === 'access') {
+        ws.send(JSON.stringify({ type: 'access', ok: data.code === ACCESS_CODE }));
+
+      } else if (data.type === 'login') {
+        const { username, password } = data;
+        if (USERS[username] === password) {
+          loggedUser = username;
+          ws.send(JSON.stringify({ type: 'login', ok: true }));
+          ws.send(JSON.stringify({ type: 'history', messages: savedMessages }));
+        } else {
+          ws.send(JSON.stringify({ type: 'login', ok: false }));
+        }
+
+      } else if (data.type === 'message' && loggedUser) {
+        const message = { username: loggedUser, text: data.text };
+        savedMessages.push(message);
+        wss.clients.forEach(client => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ type: 'message', ...message }));
+          }
+        });
+      }
+    } catch (err) {
+      console.error('Błąd JSON:', err);
     }
-
-    switch (data.type) {
-      case 'access_code':
-        ws.send(JSON.stringify({ type: 'access_code', status: data.code === accessCode ? 'ok' : 'error' }));
-        break;
-
-      case 'login':
-        const valid = users[data.username] === data.password;
-        ws.username = valid ? data.username : null;
-        ws.send(JSON.stringify({ type: 'login', status: valid ? 'ok' : 'error' }));
-        break;
-
-      case 'message':
-        if (!ws.username) return;
-        const msg = {
-          type: 'message',
-          username: ws.username,
-          text: data.text,
-          time: new Date().toLocaleTimeString()
-        };
-        clients.forEach(client => client.readyState === WebSocket.OPEN && client.send(JSON.stringify(msg)));
-        break;
-    }
-  });
-
-  ws.on('close', () => {
-    clients = clients.filter(c => c !== ws);
   });
 });
 
-const port = process.env.PORT || 3000;
-server.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+server.listen(PORT, () => console.log(`Serwer działa na porcie ${PORT}`));
