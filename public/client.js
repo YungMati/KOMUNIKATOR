@@ -1,0 +1,31 @@
+const ws = new WebSocket(`ws://${window.location.host}`);
+
+const messagesDiv = document.getElementById("messages");
+const input = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
+
+function addMessage(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  div.className = "message";
+  messagesDiv.appendChild(div);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+ws.onmessage = (event) => {
+  addMessage(event.data);
+};
+
+sendBtn.onclick = () => {
+  const text = input.value.trim();
+  if (text) {
+    ws.send(text);
+    input.value = "";
+  }
+};
+
+input.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    sendBtn.click();
+  }
+});
