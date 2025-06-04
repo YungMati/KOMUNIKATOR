@@ -1,174 +1,58 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bezpieczny Komunikator</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      padding: 0;
-      background: #2c2f33;
-      font-family: "Segoe UI", sans-serif;
-      color: #dcddde;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .container {
-      width: 100%;
-      max-width: 420px;
-      background: #23272a;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
-      animation: fadeIn 0.5s ease;
-    }
-    h2 { text-align: center; color: #ffffff; margin-bottom: 20px; }
-    input[type="text"], input[type="password"] {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 4px;
-      background-color: #2c2f33;
-      color: #ffffff;
-      transition: background-color 0.3s ease;
-    }
-    input:focus { outline: none; background-color: #3a3d41; }
-    button {
-      padding: 12px;
-      border: none;
-      border-radius: 4px;
-      background-color: #5865f2;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover { background-color: #4752c4; }
-    .error {
-      color: #f04747;
-      font-size: 0.9rem;
-      text-align: center;
-      min-height: 1.2em;
-    }
-    #chat {
-      display: none;
-      flex-direction: column;
-      height: 100vh;
-      width: 100vw;
-      background-color: #2f3136;
-      padding: 10px;
-    }
-    #messages {
-      flex-grow: 1;
-      padding: 20px;
-      margin-bottom: 10px;
-      overflow-y: auto;
-      border-radius: 8px;
-      background: #23272a;
-    }
-    .message {
-      margin-bottom: 15px;
-      animation: slideUp 0.2s ease;
-    }
-    .message .user {
-      color: #4f90e2;
-      font-weight: bold;
-    }
-    .message .text {
-      background: #40444b;
-      padding: 10px;
-      border-radius: 6px;
-      margin-top: 4px;
-      color: white;
-      word-break: break-word;
-    }
-    #inputContainer {
-      display: flex;
-      align-items: center;
-      background: transparent;
-      padding: 5px 10px;
-      gap: 10px;
-    }
-    #messageInput {
-      flex-grow: 1;
-      border: none;
-      padding: 14px;
-      background: #40444b;
-      color: white;
-      border-radius: 8px;
-      font-size: 1rem;
-    }
-    #sendBtn {
-      background-color: #5865f2;
-      width: 46px;
-      height: 46px;
-      min-width: 46px;
-      border-radius: 50%;
-      font-size: 0.9rem;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #imageBtn {
-      background-color: #4f545c;
-      width: 46px;
-      height: 46px;
-      min-width: 46px;
-      border-radius: 50%;
-      font-size: 1.2rem;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #imageInput {
-      display: none;
-    }
-    img.chat-image {
-      max-width: 100%;
-      border-radius: 6px;
-      margin-top: 5px;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+<!-- ... dotychczasowy kod head i style bez zmian ... -->
+
+<style>
+  /* Dodane style dla listy użytkowników */
+  #chatLayout {
+    display: flex;
+    height: 100vh;
+  }
+
+  #chatMain {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  #userList {
+    width: 140px;
+    background: #1e2124;
+    color: #ffffff;
+    padding: 10px;
+    overflow-y: auto;
+    border-left: 1px solid #333;
+  }
+
+  #userList h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+    color: #aaa;
+  }
+
+  .userOnline {
+    font-size: 14px;
+    padding: 4px 0;
+    color: #4f90e2;
+  }
+</style>
 </head>
 <body>
 
-<div class="container" id="accessScreen">
-  <h2>Podaj kod dostępu</h2>
-  <input type="password" id="accessCodeInput" placeholder="Kod dostępu">
-  <button id="accessBtn">Dalej</button>
-  <div class="error" id="accessError"></div>
-</div>
+<!-- ... Ekrany logowania i kodu dostępu bez zmian ... -->
 
-<div class="container" id="loginScreen" style="display:none;">
-  <h2>Logowanie</h2>
-  <input type="text" id="usernameInput" placeholder="Nazwa użytkownika">
-  <input type="password" id="passwordInput" placeholder="Hasło">
-  <button id="loginBtn">Zaloguj</button>
-  <div class="error" id="loginError"></div>
-</div>
-
-<div id="chat">
-  <div id="messages"></div>
-  <div id="inputContainer">
-    <input type="text" id="messageInput" placeholder="Napisz wiadomość...">
-    <button id="sendBtn">➤</button>
-    <input type="file" id="imageInput" accept="image/*">
-    <button id="imageBtn">📷</button>
+<div id="chat" style="display:none;">
+  <div id="chatLayout">
+    <div id="chatMain">
+      <div id="messages"></div>
+      <div id="inputContainer">
+        <input type="text" id="messageInput" placeholder="Napisz wiadomość...">
+        <button id="sendBtn">➤</button>
+      </div>
+    </div>
+    <div id="userList">
+      <h3>Online:</h3>
+      <div id="usersOnline"></div>
+    </div>
   </div>
 </div>
 
@@ -190,32 +74,27 @@
   const messages = document.getElementById("messages");
   const messageInput = document.getElementById("messageInput");
   const sendBtn = document.getElementById("sendBtn");
-
-  const imageInput = document.getElementById("imageInput");
-  const imageBtn = document.getElementById("imageBtn");
+  const usersOnline = document.getElementById("usersOnline");
 
   let username = "";
 
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
+
     if (data.type === "access_code") {
+      accessError.textContent = data.status === "ok" ? "" : "Niepoprawny kod dostępu.";
       if (data.status === "ok") {
         accessScreen.style.display = "none";
         loginScreen.style.display = "block";
-        accessError.textContent = "";
-      } else {
-        accessError.textContent = "Niepoprawny kod dostępu.";
       }
     }
 
     if (data.type === "login") {
+      loginError.textContent = data.status === "ok" ? "" : "Błędne dane logowania.";
       if (data.status === "ok") {
         loginScreen.style.display = "none";
         chat.style.display = "flex";
-        loginError.textContent = "";
         username = usernameInput.value;
-      } else {
-        loginError.textContent = "Błędne dane logowania.";
       }
     }
 
@@ -229,19 +108,41 @@
 
       const text = document.createElement("div");
       text.classList.add("text");
-
-      if (data.image) {
-        const img = document.createElement("img");
-        img.src = data.image;
-        img.className = "chat-image";
-        text.appendChild(img);
-      } else {
-        text.textContent = data.text;
-      }
+      text.textContent = data.text;
 
       div.appendChild(user);
       div.appendChild(text);
       messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    if (data.type === "users_online") {
+      usersOnline.innerHTML = "";
+      data.users.forEach(user => {
+        const el = document.createElement("div");
+        el.classList.add("userOnline");
+        el.textContent = user;
+        usersOnline.appendChild(el);
+      });
+    }
+
+    if (data.type === "history") {
+      data.messages.forEach(msg => {
+        const div = document.createElement("div");
+        div.classList.add("message");
+
+        const user = document.createElement("div");
+        user.classList.add("user");
+        user.textContent = msg.username;
+
+        const text = document.createElement("div");
+        text.classList.add("text");
+        text.textContent = msg.text;
+
+        div.appendChild(user);
+        div.appendChild(text);
+        messages.appendChild(div);
+      });
       messages.scrollTop = messages.scrollHeight;
     }
   };
@@ -275,22 +176,6 @@
   messageInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") sendBtn.click();
   });
-
-  imageBtn.onclick = () => {
-    imageInput.click();
-  };
-
-  imageInput.onchange = () => {
-    const file = imageInput.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = reader.result;
-      ws.send(JSON.stringify({ type: "message", image: base64 }));
-    };
-    reader.readAsDataURL(file);
-  };
 </script>
 </body>
 </html>
