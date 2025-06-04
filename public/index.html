@@ -1,57 +1,221 @@
-<!-- ... dotychczasowy kod head i style bez zmian ... -->
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bezpieczny Komunikator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-<style>
-  /* Dodane style dla listy użytkowników */
-  #chatLayout {
-    display: flex;
-    height: 100vh;
-  }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #2c2f33;
+      font-family: "Segoe UI", sans-serif;
+      color: #dcddde;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-  #chatMain {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-  }
+    .container {
+      width: 100%;
+      max-width: 420px;
+      background: #23272a;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      animation: fadeIn 0.5s ease;
+    }
 
-  #userList {
-    width: 140px;
-    background: #1e2124;
-    color: #ffffff;
-    padding: 10px;
-    overflow-y: auto;
-    border-left: 1px solid #333;
-  }
+    h2 {
+      text-align: center;
+      color: #ffffff;
+      margin-bottom: 20px;
+    }
 
-  #userList h3 {
-    font-size: 14px;
-    margin-bottom: 10px;
-    color: #aaa;
-  }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 4px;
+      background-color: #2c2f33;
+      color: #ffffff;
+      transition: background-color 0.3s ease;
+    }
 
-  .userOnline {
-    font-size: 14px;
-    padding: 4px 0;
-    color: #4f90e2;
-  }
-</style>
+    input:focus {
+      outline: none;
+      background-color: #3a3d41;
+    }
+
+    button {
+      padding: 12px;
+      border: none;
+      border-radius: 4px;
+      background-color: #5865f2;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #4752c4;
+    }
+
+    .error {
+      color: #f04747;
+      font-size: 0.9rem;
+      text-align: center;
+      min-height: 1.2em;
+    }
+
+    #chat {
+      display: none;
+      height: 100vh;
+      width: 100vw;
+      background-color: #2f3136;
+      display: flex;
+      flex-direction: row;
+    }
+
+    #usersOnline {
+      width: 120px;
+      background: #202225;
+      padding: 10px;
+      overflow-y: auto;
+      border-right: 1px solid #111;
+    }
+
+    #usersOnline h4 {
+      color: #ffffff;
+      font-size: 0.9rem;
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    #usersOnline ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #usersOnline li {
+      padding: 6px 8px;
+      border-radius: 4px;
+      background-color: #2c2f33;
+      margin-bottom: 5px;
+      font-size: 0.85rem;
+    }
+
+    #mainChat {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+    }
+
+    #messages {
+      flex-grow: 1;
+      padding: 20px;
+      margin-bottom: 10px;
+      overflow-y: auto;
+      border-radius: 8px;
+      background: #23272a;
+    }
+
+    .message {
+      margin-bottom: 15px;
+      animation: slideUp 0.2s ease;
+    }
+
+    .message .user {
+      color: #4f90e2;
+      font-weight: bold;
+    }
+
+    .message .text {
+      background: #40444b;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 4px;
+      color: white;
+    }
+
+    #inputContainer {
+      display: flex;
+      align-items: center;
+      background: transparent;
+      padding: 5px 10px;
+      gap: 10px;
+    }
+
+    #messageInput {
+      flex-grow: 1;
+      border: none;
+      padding: 14px;
+      background: #40444b;
+      color: white;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    #sendBtn {
+      background-color: #5865f2;
+      width: 46px;
+      height: 46px;
+      min-width: 46px;
+      border-radius: 50%;
+      font-size: 0.9rem;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
 
-<!-- ... Ekrany logowania i kodu dostępu bez zmian ... -->
+<div class="container" id="accessScreen">
+  <h2>Podaj kod dostępu</h2>
+  <input type="password" id="accessCodeInput" placeholder="Kod dostępu">
+  <button id="accessBtn">Dalej</button>
+  <div class="error" id="accessError"></div>
+</div>
 
-<div id="chat" style="display:none;">
-  <div id="chatLayout">
-    <div id="chatMain">
-      <div id="messages"></div>
-      <div id="inputContainer">
-        <input type="text" id="messageInput" placeholder="Napisz wiadomość...">
-        <button id="sendBtn">➤</button>
-      </div>
-    </div>
-    <div id="userList">
-      <h3>Online:</h3>
-      <div id="usersOnline"></div>
+<div class="container" id="loginScreen" style="display:none;">
+  <h2>Logowanie</h2>
+  <input type="text" id="usernameInput" placeholder="Nazwa użytkownika">
+  <input type="password" id="passwordInput" placeholder="Hasło">
+  <button id="loginBtn">Zaloguj</button>
+  <div class="error" id="loginError"></div>
+</div>
+
+<div id="chat">
+  <div id="usersOnline">
+    <h4>Online</h4>
+    <ul id="userList"></ul>
+  </div>
+  <div id="mainChat">
+    <div id="messages"></div>
+    <div id="inputContainer">
+      <input type="text" id="messageInput" placeholder="Napisz wiadomość...">
+      <button id="sendBtn">➤</button>
     </div>
   </div>
 </div>
@@ -74,7 +238,8 @@
   const messages = document.getElementById("messages");
   const messageInput = document.getElementById("messageInput");
   const sendBtn = document.getElementById("sendBtn");
-  const usersOnline = document.getElementById("usersOnline");
+
+  const userList = document.getElementById("userList");
 
   let username = "";
 
@@ -82,70 +247,65 @@
     const data = JSON.parse(event.data);
 
     if (data.type === "access_code") {
-      accessError.textContent = data.status === "ok" ? "" : "Niepoprawny kod dostępu.";
       if (data.status === "ok") {
         accessScreen.style.display = "none";
         loginScreen.style.display = "block";
+        accessError.textContent = "";
+      } else {
+        accessError.textContent = "Niepoprawny kod dostępu.";
       }
     }
 
     if (data.type === "login") {
-      loginError.textContent = data.status === "ok" ? "" : "Błędne dane logowania.";
       if (data.status === "ok") {
         loginScreen.style.display = "none";
         chat.style.display = "flex";
+        loginError.textContent = "";
         username = usernameInput.value;
+      } else {
+        loginError.textContent = "Błędne dane logowania.";
       }
     }
 
     if (data.type === "message") {
-      const div = document.createElement("div");
-      div.classList.add("message");
-
-      const user = document.createElement("div");
-      user.classList.add("user");
-      user.textContent = data.username;
-
-      const text = document.createElement("div");
-      text.classList.add("text");
-      text.textContent = data.text;
-
-      div.appendChild(user);
-      div.appendChild(text);
-      messages.appendChild(div);
-      messages.scrollTop = messages.scrollHeight;
-    }
-
-    if (data.type === "users_online") {
-      usersOnline.innerHTML = "";
-      data.users.forEach(user => {
-        const el = document.createElement("div");
-        el.classList.add("userOnline");
-        el.textContent = user;
-        usersOnline.appendChild(el);
-      });
+      addMessage(data.username, data.text);
     }
 
     if (data.type === "history") {
-      data.messages.forEach(msg => {
-        const div = document.createElement("div");
-        div.classList.add("message");
+      data.messages.forEach(msg => addMessage(msg.username, msg.text));
+    }
 
-        const user = document.createElement("div");
-        user.classList.add("user");
-        user.textContent = msg.username;
-
-        const text = document.createElement("div");
-        text.classList.add("text");
-        text.textContent = msg.text;
-
-        div.appendChild(user);
-        div.appendChild(text);
-        messages.appendChild(div);
-      });
-      messages.scrollTop = messages.scrollHeight;
+    if (data.type === "user_list") {
+      updateUserList(data.users);
     }
   };
+
+  function addMessage(user, text) {
+    const div = document.createElement("div");
+    div.classList.add("message");
+
+    const userDiv = document.createElement("div");
+    userDiv.classList.add("user");
+    userDiv.textContent = user;
+
+    const textDiv = document.createElement("div");
+    textDiv.classList.add("text");
+    textDiv.textContent = text;
+
+    div.appendChild(userDiv);
+    div.appendChild(textDiv);
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function updateUserList(users) {
+    userList.innerHTML = "";
+    users.forEach(u => {
+      const li = document.createElement("li");
+      li.textContent = u;
+      userList.appendChild(li);
+    });
+  }
 
   accessBtn.onclick = () => {
     const code = accessCodeInput.value.trim();
